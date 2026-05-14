@@ -1,0 +1,27 @@
+base_branch = "main"
+deploy_command = "bin/deploy"
+
+[[worktree]]
+label = "agent-A"
+branch = "agent/A"
+path = "../my-app-worktrees/agent-A"
+
+[[worktree]]
+label = "agent-B"
+branch = "agent/B"
+path = "../my-app-worktrees/agent-B"
+
+[[worktree]]
+label = "agent-C"
+branch = "agent/C"
+path = "../my-app-worktrees/agent-C"
+
+[[worktree]]
+label = "agent-D"
+branch = "agent/D"
+path = "../my-app-worktrees/agent-D"
+
+[[worktree]]
+label = "agent-annotations"
+branch = "agent/annotations"
+path = "../my-app-worktrees/agent-annotations"
