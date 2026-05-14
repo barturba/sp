@@ -326,19 +326,15 @@ fn handle_key(app: &mut AppState, key: KeyEvent) -> bool {
     match key.code {
         KeyCode::Char('q') => return true,
         KeyCode::Char('r') => app.refresh(),
-        KeyCode::Down | KeyCode::Char('j') => {
-            if !app.snapshot.worktrees.is_empty() {
-                app.selected = (app.selected + 1) % app.snapshot.worktrees.len();
-            }
+        KeyCode::Down | KeyCode::Char('j') if !app.snapshot.worktrees.is_empty() => {
+            app.selected = (app.selected + 1) % app.snapshot.worktrees.len();
         }
-        KeyCode::Up | KeyCode::Char('k') => {
-            if !app.snapshot.worktrees.is_empty() {
-                app.selected = if app.selected == 0 {
-                    app.snapshot.worktrees.len() - 1
-                } else {
-                    app.selected - 1
-                };
-            }
+        KeyCode::Up | KeyCode::Char('k') if !app.snapshot.worktrees.is_empty() => {
+            app.selected = if app.selected == 0 {
+                app.snapshot.worktrees.len() - 1
+            } else {
+                app.selected - 1
+            };
         }
         KeyCode::Char('m') => {
             if let Some(row) = app.selected_worktree() {
