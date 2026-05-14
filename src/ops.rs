@@ -226,8 +226,8 @@ fn sync_base(config: &Config, log: &mut dyn FnMut(String)) -> Option<OperationRe
 }
 
 fn rebase_one(config: &Config, row: &WorktreeRow, log: &mut dyn FnMut(String)) -> OperationResult {
-    if let Some(blocker) = target_blocker(row) {
-        return OperationResult::blocked(blocker.replace("Merge", "Rebase"));
+    if let Some(blocker) = rebase_target_blocker(row) {
+        return OperationResult::blocked(blocker);
     }
     let stash_message = format!("sp auto-stash before rebase {}", row.label);
     let stashed = !worktree_status(&row.path).is_empty();
@@ -354,6 +354,25 @@ fn target_blocker(row: &WorktreeRow) -> Option<String> {
     None
 }
 
+fn rebase_target_blocker(row: &WorktreeRow) -> Option<String> {
+    if !row.path.join(".git").exists() {
+        return Some(format!("Rebase blocked: {} worktree missing", row.label));
+    }
+    let current_branch = worktree_branch(&row.path);
+    if current_branch != row.branch {
+        return Some(format!(
+            "Rebase blocked: {} on {}",
+            row.label,
+            if current_branch.is_empty() {
+                "no branch"
+            } else {
+                &current_branch
+            }
+        ));
+    }
+    None
+}
+
 #[derive(Clone, Debug, PartialEq, Eq)]
 struct CommandResult {
     code: i32,
@@ -463,6 +482,56 @@ mod tests {
         assert!(
             logs.iter()
                 .any(|line| line == "$ git merge --ff-only agent/A")
+        );
+    }
+
+    #[test]
+    fn rebase_all_preserves_dirty_worktree_changes() {
+        let dir = tempfile::tempdir().unwrap();
+        let repo = dir.path().join("repo");
+        let worktree = dir.path().join("agent-A");
+        fs::create_dir(&repo).unwrap();
+        git(&["init"], &repo);
+        git(&["checkout", "-b", "main"], &repo);
+        commit_file(&repo, "README.md", "repo\n", "init");
+        git(
+            &[
+                "worktree",
+                "add",
+                "-b",
+                "agent/A",
+                worktree.to_str().unwrap(),
+                "main",
+            ],
+            &repo,
+        );
+        commit_file(&worktree, "agent.txt", "agent\n", "agent change");
+        commit_file(&repo, "base.txt", "base\n", "base change");
+        fs::write(worktree.join("dirty.txt"), "dirty\n").unwrap();
+        let config = Config {
+            repo_path: repo.clone(),
+            base_branch: "main".to_string(),
+            deploy_command: None,
+            worktrees: vec![crate::config::WorktreeSpec {
+                label: "agent-A".to_string(),
+                branch: "agent/A".to_string(),
+                path: Some(worktree.clone()),
+            }],
+        };
+        let mut logs = Vec::new();
+
+        let result = rebase_all(&config, &mut |line| logs.push(line));
+
+        assert!(result.ok, "{}", result.message);
+        assert!(worktree.join("base.txt").exists());
+        assert_eq!(
+            fs::read_to_string(worktree.join("dirty.txt")).unwrap(),
+            "dirty\n"
+        );
+        assert_eq!(worktree_status(&worktree), "1 changed file");
+        assert!(
+            logs.iter()
+                .any(|line| line.contains("git stash push -u -m"))
         );
     }
 }
