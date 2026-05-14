@@ -2,5 +2,18 @@
 name = "sp"
 version = "0.1.0"
 edition = "2024"
+description = "A fast terminal cockpit for git-worktree and agent-heavy development."
+license = "MIT"
+repository = "https://github.com/barturba/sp"
+readme = "README.md"
 
 [dependencies]
+anyhow = "1"
+chrono = "0.4"
+clap = { version = "4", features = ["derive"] }
+crossterm = "0.28"
+ratatui = "0.29"
+serde = { version = "1", features = ["derive"] }
+tempfile = "3"
+toml = "0.9"
+unicode-width = "0.2"
