@@ -13,7 +13,7 @@ It watches agent branches, shows what is ready to merge, keeps dirty work obviou
 
 It is intentionally small: no daemon, no database, no SaaS, no hidden state. It shells out to `git`, renders a compact Ratatui interface, and stays responsive by doing expensive status polling off the UI thread.
 
-![sp terminal dashboard](assets/screenshot.svg)
+![sp terminal dashboard](assets/screenshot.gif)
 
 ## Why
 
