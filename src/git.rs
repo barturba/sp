@@ -256,13 +256,13 @@ fn parse_worktree_list(output: &str) -> Vec<WorktreeEntry> {
                 path: PathBuf::from(path),
                 branch: String::new(),
             });
-        } else if let Some(branch) = raw_line.strip_prefix("branch ") {
-            if let Some(entry) = &mut current {
-                entry.branch = branch
-                    .strip_prefix("refs/heads/")
-                    .unwrap_or(branch)
-                    .to_string();
-            }
+        } else if let Some(branch) = raw_line.strip_prefix("branch ")
+            && let Some(entry) = &mut current
+        {
+            entry.branch = branch
+                .strip_prefix("refs/heads/")
+                .unwrap_or(branch)
+                .to_string();
         }
     }
     if let Some(entry) = current {

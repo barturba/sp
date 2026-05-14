@@ -126,13 +126,13 @@ fn run_loop(terminal: &mut Terminal<CrosstermBackend<io::Stdout>>, config: Confi
         } else {
             Duration::from_millis(150)
         };
-        if event::poll(timeout)? {
-            if let CrosstermEvent::Key(key) = event::read()? {
-                if handle_key(&mut app, key) {
-                    return Ok(0);
-                }
-                dirty = true;
+        if event::poll(timeout)?
+            && let CrosstermEvent::Key(key) = event::read()?
+        {
+            if handle_key(&mut app, key) {
+                return Ok(0);
             }
+            dirty = true;
         }
     }
 }
