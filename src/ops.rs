@@ -421,25 +421,20 @@ mod tests {
         assert!(status.success(), "git {args:?}");
     }
 
+    fn init_repo(repo: &Path) {
+        fs::create_dir(repo).unwrap();
+        git(&["init", "-b", "main"], repo);
+        git(&["config", "user.name", "Test"], repo);
+        git(&["config", "user.email", "test@example.com"], repo);
+        git(&["config", "commit.gpgsign", "false"], repo);
+    }
+
     fn commit_file(repo: &Path, path: &str, body: &str, message: &str) {
         let file = repo.join(path);
         fs::create_dir_all(file.parent().unwrap()).unwrap();
         fs::write(&file, body).unwrap();
         git(&["add", path], repo);
-        git(
-            &[
-                "-c",
-                "user.name=Test",
-                "-c",
-                "user.email=test@example.com",
-                "-c",
-                "commit.gpgsign=false",
-                "commit",
-                "-m",
-                message,
-            ],
-            repo,
-        );
+        git(&["commit", "-m", message], repo);
     }
 
     #[test]
@@ -447,9 +442,7 @@ mod tests {
         let dir = tempfile::tempdir().unwrap();
         let repo = dir.path().join("repo");
         let worktree = dir.path().join("agent-A");
-        fs::create_dir(&repo).unwrap();
-        git(&["init"], &repo);
-        git(&["checkout", "-b", "main"], &repo);
+        init_repo(&repo);
         commit_file(&repo, "README.md", "repo\n", "init");
         git(
             &[
@@ -490,9 +483,7 @@ mod tests {
         let dir = tempfile::tempdir().unwrap();
         let repo = dir.path().join("repo");
         let worktree = dir.path().join("agent-A");
-        fs::create_dir(&repo).unwrap();
-        git(&["init"], &repo);
-        git(&["checkout", "-b", "main"], &repo);
+        init_repo(&repo);
         commit_file(&repo, "README.md", "repo\n", "init");
         git(
             &[
