@@ -1,4 +1,4 @@
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 
 use crate::config::{Config, WorktreeSpec};
@@ -217,11 +217,18 @@ pub fn worktree_status(path: &Path) -> String {
     }
 }
 
-pub fn git_worktree_paths(repo_path: &Path) -> HashSet<PathBuf> {
-    git_worktree_entries(repo_path)
-        .into_iter()
-        .map(|entry| entry.path)
-        .collect()
+pub fn git_ref(repo_path: &Path, reference: &str) -> String {
+    git_stdout(&["git", "rev-parse", reference], repo_path)
+        .trim()
+        .to_string()
+}
+
+pub fn short_sha(value: &str) -> String {
+    if value.is_empty() {
+        "unknown".to_string()
+    } else {
+        value.chars().take(8).collect()
+    }
 }
 
 fn git_worktree_entries(repo_path: &Path) -> Vec<WorktreeEntry> {

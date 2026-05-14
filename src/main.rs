@@ -4,6 +4,7 @@ use clap::Parser;
 mod config;
 mod git;
 mod model;
+mod ops;
 mod util;
 
 use config::Config;
