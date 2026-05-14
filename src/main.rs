@@ -1,10 +1,12 @@
 use anyhow::Result;
 use clap::Parser;
+use std::io::IsTerminal;
 
 mod config;
 mod git;
 mod model;
 mod ops;
+mod ui;
 mod util;
 
 use config::Config;
@@ -47,6 +49,8 @@ fn main() -> Result<()> {
         }
         return Ok(());
     }
-    println!("{}", git::build_snapshot(&config).summary());
-    Ok(())
+    if !std::io::stdin().is_terminal() || !std::io::stdout().is_terminal() {
+        anyhow::bail!("sp requires an interactive terminal. Use --once for scriptable output.");
+    }
+    ui::run(config).map(|_| ())
 }
